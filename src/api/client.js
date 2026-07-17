@@ -22,12 +22,16 @@ export const deleteArticle = (row) =>
 
 // Gallery
 export const getGallery = () => request('/api/gallery');
-export const addGalleryImage = (type, url) =>
-  request('/api/gallery', { method: 'POST', body: JSON.stringify({ type, url }) });
-export const deleteGalleryImage = (type, row) =>
-  request(`/api/gallery?type=${type}&row=${row}`, { method: 'DELETE' });
-export const moveGalleryImage = (type, row, toType) =>
-  request('/api/gallery', { method: 'PATCH', body: JSON.stringify({ type, row, toType }) });
+export const addGalleryImage = (category, url) =>
+  request('/api/gallery', { method: 'POST', body: JSON.stringify({ category, url }) });
+export const deleteGalleryImage = (category, row) =>
+  request(`/api/gallery?category=${encodeURIComponent(category)}&row=${row}`, { method: 'DELETE' });
+export const moveGalleryImage = (category, row, toCategory) =>
+  request('/api/gallery', { method: 'PATCH', body: JSON.stringify({ category, row, toCategory }) });
+export const addGalleryCategory = (name) =>
+  request('/api/gallery-categories', { method: 'POST', body: JSON.stringify({ name }) });
+export const deleteGalleryCategory = (name) =>
+  request(`/api/gallery-categories?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
 
 // Bio
 export const getBios = () => request('/api/bio');
@@ -36,8 +40,16 @@ export const updateBio = (row, bio) =>
   request(`/api/bio?row=${row}`, { method: 'PUT', body: JSON.stringify(bio) });
 export const deleteBio = (row) => request(`/api/bio?row=${row}`, { method: 'DELETE' });
 
+// Sponsors
+export const getSponsors = () => request('/api/sponsors');
+export const addSponsor = (sponsor) =>
+  request('/api/sponsors', { method: 'POST', body: JSON.stringify(sponsor) });
+export const updateSponsor = (row, sponsor) =>
+  request(`/api/sponsors?row=${row}`, { method: 'PUT', body: JSON.stringify(sponsor) });
+export const deleteSponsor = (row) => request(`/api/sponsors?row=${row}`, { method: 'DELETE' });
+
 // Cloudinary — direct unsigned upload from the browser, no backend involved.
-export async function uploadToCloudinary(file, onProgress) {
+export async function uploadToCloudinary(file, onProgress, folder = 'gallery') {
   const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
   if (!cloudName || !uploadPreset) {
@@ -47,7 +59,7 @@ export async function uploadToCloudinary(file, onProgress) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', uploadPreset);
-  formData.append('folder', 'gallery');
+  formData.append('folder', folder);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

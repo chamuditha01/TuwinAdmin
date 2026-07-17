@@ -1,18 +1,7 @@
-const { fetchWorkbook, getSheetRows, SHEET_ID } = require('./_lib/sheet');
+const { fetchWorkbook, getSheetRows, getHeaderRow, SHEET_ID } = require('./_lib/sheet');
 const { getSheetsClient } = require('./_lib/sheetsClient');
 const { deleteByUrl } = require('./_lib/cloudinary');
-
-const SHEET_NAME = 'Gallery';
-
-// local/international are independent lists that happen to share a sheet;
-// each keeps its own column so adding/removing one never touches the other.
-const COLUMN_LETTER = { local: 'A', international: 'B' };
-
-function assertType(type) {
-  if (type !== 'local' && type !== 'international') {
-    throw Object.assign(new Error('type must be "local" or "international"'), { status: 400 });
-  }
-}
+const { SHEET_NAME, getLiveCategories, resolveColumn } = require('./_lib/galleryColumns');
 
 async function getColumnValues(sheets, col) {
   const current = await sheets.spreadsheets.values.get({
@@ -25,8 +14,8 @@ async function getColumnValues(sheets, col) {
 // Row right after the last non-blank cell in this column. Using an exact
 // single-cell `values.update` (not `values.append`) is deliberate: append
 // auto-detects a "table" by expanding into contiguous data in adjacent
-// columns, so on a row where both local+international are filled it was
-// putting single-column appends into the wrong column entirely.
+// columns, so on a row where multiple categories are filled it was putting
+// single-column appends into the wrong column entirely.
 async function nextRowFor(sheets, col) {
   const values = await getColumnValues(sheets, col);
   let lastFilled = -1;
@@ -46,7 +35,7 @@ async function writeCell(sheets, col, row, value) {
 }
 
 // Removes the value at `row` in `col`, shifting everything below up by one
-// (mirrors the DELETE handler's approach) so gaps aren't left behind.
+// so gaps aren't left behind.
 async function removeCell(sheets, col, row) {
   const values = await getColumnValues(sheets, col);
   const targetIdx = row - 2;
@@ -69,42 +58,47 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const workbook = await fetchWorkbook();
+      const headers = getHeaderRow(workbook, SHEET_NAME);
       const rows = getSheetRows(workbook, SHEET_NAME);
 
-      const local = rows
-        .filter((r) => String(r.local ?? '').trim())
-        .map((r) => ({ row: r._row, url: String(r.local).trim() }));
-      const international = rows
-        .filter((r) => String(r.international ?? '').trim())
-        .map((r) => ({ row: r._row, url: String(r.international).trim() }));
+      const categories = headers.map((name) => ({
+        name,
+        images: rows
+          .filter((r) => String(r[name] ?? '').trim())
+          .map((r) => ({ row: r._row, url: String(r[name]).trim() })),
+      }));
 
-      return res.status(200).json({ local, international });
+      return res.status(200).json({ categories });
     }
 
     if (req.method === 'POST') {
-      const { type, url } = req.body || {};
-      assertType(type);
+      const { category, url } = req.body || {};
+      if (!category) return res.status(400).json({ error: 'Missing category' });
       if (!url) return res.status(400).json({ error: 'Missing url' });
 
-      const col = COLUMN_LETTER[type];
       const sheets = getSheetsClient();
+      const col = resolveColumn(await getLiveCategories(sheets), category);
       const row = await nextRowFor(sheets, col);
       await writeCell(sheets, col, row, url);
       return res.status(201).json({ ok: true });
     }
 
-    // Moves an image from one column to the other without touching
+    // Moves an image from one category to another without touching
     // Cloudinary (the asset itself doesn't change, just which list it's in).
     if (req.method === 'PATCH') {
-      const { type, row, toType } = req.body || {};
-      assertType(type);
-      assertType(toType);
-      if (type === toType) return res.status(400).json({ error: 'toType must differ from type' });
+      const { category, row, toCategory } = req.body || {};
+      if (!category || !toCategory) {
+        return res.status(400).json({ error: 'Missing category or toCategory' });
+      }
+      if (category === toCategory) {
+        return res.status(400).json({ error: 'toCategory must differ from category' });
+      }
       if (!row || row < 2) return res.status(400).json({ error: 'Missing or invalid row' });
 
       const sheets = getSheetsClient();
-      const fromCol = COLUMN_LETTER[type];
-      const toCol = COLUMN_LETTER[toType];
+      const categories = await getLiveCategories(sheets);
+      const fromCol = resolveColumn(categories, category);
+      const toCol = resolveColumn(categories, toCategory);
 
       const url = await removeCell(sheets, fromCol, row);
       if (url === undefined || !url) return res.status(404).json({ error: 'Row not found' });
@@ -116,13 +110,13 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const type = req.query.type;
+      const category = req.query.category;
       const row = Number(req.query.row);
-      assertType(type);
+      if (!category) return res.status(400).json({ error: 'Missing category' });
       if (!row || row < 2) return res.status(400).json({ error: 'Missing or invalid row' });
 
-      const col = COLUMN_LETTER[type];
       const sheets = getSheetsClient();
+      const col = resolveColumn(await getLiveCategories(sheets), category);
       const removedUrl = await removeCell(sheets, col, row);
       if (removedUrl === undefined) return res.status(404).json({ error: 'Row not found' });
 

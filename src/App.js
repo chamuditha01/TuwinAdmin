@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import ArticlesPage from './pages/ArticlesPage';
 import GalleryPage from './pages/GalleryPage';
 import BioPage from './pages/BioPage';
+import SponsorsPage from './pages/SponsorsPage';
 import './styles/admin.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Route path="/articles" element={<ArticlesPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/bio" element={<BioPage />} />
+          <Route path="/sponsors" element={<SponsorsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

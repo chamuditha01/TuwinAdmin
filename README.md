@@ -3,8 +3,9 @@
 Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.google.com/spreadsheets/d/1sY7_eNfVYkKDoS3SXm1ft2luVwKsN59orsIjehfV9Xs/edit).
 
 - **Articles** tab — full CRUD (add / edit / delete rows: category, source, date, title, description, link_text, url).
-- **Gallery** tab — upload images (stored on Cloudinary, URL saved to the sheet), move them between `local`/`international`, and delete them.
+- **Gallery** tab — upload one or many images at once (stored on Cloudinary, URLs saved to the sheet) into any category, move them between categories, and delete them. Categories are just named columns on the Gallery sheet — `local`/`international` are the two that already existed, and "+ Add Category" adds a new column so more can be created from the UI without touching the spreadsheet directly. "Delete Category" removes the column and every image in it (sheet row + Cloudinary asset) — there's no undo, so it confirms first.
 - **Bio** tab — full CRUD for Name / Birthday / World Rank. Age is never entered manually — it's calculated from Birthday on every read and write, so it can't go stale.
+- **Sponsors** tab — full CRUD for Name / logo (Cloudinary upload, like Gallery) / Status (`current`/`former` dropdown) / Description. Replacing or deleting a logo cleans up the old Cloudinary asset.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -115,14 +116,17 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   _lib/sheet.js        Public-export read helper
   _lib/sheetsClient.js Google Sheets API (service account) write helper
   _lib/cloudinary.js   Cloudinary delete helper
+  _lib/galleryColumns.js  Maps Gallery category names to sheet columns
   articles.js          GET/POST/PUT/DELETE for the Articles tab
   gallery.js           GET/POST/PATCH/DELETE for the Gallery tab
+  gallery-categories.js  POST/DELETE to create or remove a Gallery category (column)
   bio.js               GET/POST/PUT/DELETE for the Bio tab
+  sponsors.js          GET/POST/PUT/DELETE for the Sponsors tab
 netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect
 server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage
 ```

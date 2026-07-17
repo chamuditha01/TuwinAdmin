@@ -4,43 +4,55 @@ import {
   addGalleryImage,
   deleteGalleryImage,
   moveGalleryImage,
+  addGalleryCategory,
+  deleteGalleryCategory,
   uploadToCloudinary,
 } from '../api/client';
 import './GalleryPage.css';
 
-const OTHER_TYPE = { local: 'international', international: 'local' };
-const OTHER_LABEL = { local: 'International', international: 'Local' };
-
-function GallerySection({ title, type, images, onChanged }) {
+function GallerySection({ category, images, otherCategories, onChanged }) {
   const fileInputRef = useRef(null);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState('');
   const [deletingRow, setDeletingRow] = useState(null);
   const [movingRow, setMovingRow] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files);
     e.target.value = '';
-    if (!file) return;
+    if (files.length === 0) return;
 
     setError('');
-    setProgress(0);
-    try {
-      const url = await uploadToCloudinary(file, setProgress);
-      await addGalleryImage(type, url);
-      await onChanged();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setProgress(null);
+    const failed = [];
+
+    // Uploaded and added one at a time on purpose: adding an image picks
+    // "the next empty row" based on the column's current contents, so two
+    // uploads racing in parallel could both land on the same row and
+    // overwrite each other.
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setProgress({ index: i + 1, total: files.length, pct: 0 });
+      try {
+        const url = await uploadToCloudinary(file, (pct) =>
+          setProgress({ index: i + 1, total: files.length, pct })
+        );
+        await addGalleryImage(category, url);
+      } catch (err) {
+        failed.push(`${file.name}: ${err.message}`);
+      }
     }
+
+    setProgress(null);
+    if (failed.length > 0) setError(`Some uploads failed — ${failed.join('; ')}`);
+    await onChanged();
   };
 
   const handleDelete = async (row) => {
     if (!window.confirm('Remove this image?')) return;
     setDeletingRow(row);
     try {
-      await deleteGalleryImage(type, row);
+      await deleteGalleryImage(category, row);
       await onChanged();
     } catch (err) {
       setError(err.message);
@@ -49,10 +61,11 @@ function GallerySection({ title, type, images, onChanged }) {
     }
   };
 
-  const handleMove = async (row) => {
+  const handleMove = async (row, toCategory) => {
+    if (!toCategory) return;
     setMovingRow(row);
     try {
-      await moveGalleryImage(type, row, OTHER_TYPE[type]);
+      await moveGalleryImage(category, row, toCategory);
       await onChanged();
     } catch (err) {
       setError(err.message);
@@ -61,24 +74,52 @@ function GallerySection({ title, type, images, onChanged }) {
     }
   };
 
+  const handleDeleteCategory = async () => {
+    const warning =
+      images.length > 0
+        ? `Delete the "${category}" category and its ${images.length} image${images.length === 1 ? '' : 's'}? This cannot be undone.`
+        : `Delete the "${category}" category? This cannot be undone.`;
+    if (!window.confirm(warning)) return;
+
+    setDeletingCategory(true);
+    try {
+      await deleteGalleryCategory(category);
+      await onChanged();
+    } catch (err) {
+      setError(err.message);
+      setDeletingCategory(false);
+    }
+  };
+
   return (
     <section className="gallery-section">
       <div className="gallery-section-header">
         <div>
-          <h2>{title}</h2>
+          <h2>{category}</h2>
           <p>{images.length} image{images.length === 1 ? '' : 's'}</p>
         </div>
+        <button
+          className="btn btn-secondary btn-small"
+          onClick={handleDeleteCategory}
+          disabled={deletingCategory}
+          title="Delete this category"
+        >
+          {deletingCategory ? 'Deleting…' : 'Delete Category'}
+        </button>
         <button
           className="btn btn-primary"
           onClick={() => fileInputRef.current?.click()}
           disabled={progress !== null}
         >
-          {progress !== null ? `Uploading… ${progress}%` : '+ Upload Image'}
+          {progress !== null
+            ? `Uploading ${progress.index}/${progress.total}… ${progress.pct}%`
+            : '+ Upload Images'}
         </button>
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           hidden
           onChange={handleFileChange}
         />
@@ -94,14 +135,24 @@ function GallerySection({ title, type, images, onChanged }) {
             <div className="gallery-card" key={img.row}>
               <img src={img.url} alt="" loading="lazy" />
               <div className="gallery-card-actions">
-                <button
-                  className="gallery-card-move"
-                  onClick={() => handleMove(img.row)}
-                  disabled={movingRow === img.row || deletingRow === img.row}
-                  title={`Move to ${OTHER_LABEL[type]}`}
-                >
-                  {movingRow === img.row ? '…' : '⇄'}
-                </button>
+                {otherCategories.length > 0 && (
+                  <select
+                    className="gallery-card-move"
+                    value=""
+                    onChange={(e) => handleMove(img.row, e.target.value)}
+                    disabled={movingRow === img.row || deletingRow === img.row}
+                    title="Move to another category"
+                  >
+                    <option value="" disabled>
+                      {movingRow === img.row ? '…' : 'Move to…'}
+                    </option>
+                    {otherCategories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <button
                   className="gallery-card-delete"
                   onClick={() => handleDelete(img.row)}
@@ -119,8 +170,73 @@ function GallerySection({ title, type, images, onChanged }) {
   );
 }
 
+function AddCategoryForm({ existingNames, onAdded }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (existingNames.some((n) => n.toLowerCase() === trimmed.toLowerCase())) {
+      setError('That category already exists.');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+    try {
+      await addGalleryCategory(trimmed);
+      setName('');
+      setOpen(false);
+      await onAdded();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button className="btn btn-secondary" onClick={() => setOpen(true)}>
+        + Add Category
+      </button>
+    );
+  }
+
+  return (
+    <form className="add-category-form" onSubmit={handleSubmit}>
+      <input
+        autoFocus
+        placeholder="Category name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        disabled={saving}
+      />
+      <button type="submit" className="btn btn-primary btn-small" disabled={saving}>
+        {saving ? 'Adding…' : 'Add'}
+      </button>
+      <button
+        type="button"
+        className="btn btn-secondary btn-small"
+        onClick={() => {
+          setOpen(false);
+          setError('');
+        }}
+        disabled={saving}
+      >
+        Cancel
+      </button>
+      {error && <div className="banner-error add-category-error">{error}</div>}
+    </form>
+  );
+}
+
 export default function GalleryPage() {
-  const [gallery, setGallery] = useState({ local: [], international: [] });
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -128,7 +244,8 @@ export default function GalleryPage() {
     setLoading(true);
     setError('');
     try {
-      setGallery(await getGallery());
+      const data = await getGallery();
+      setCategories(data.categories || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -140,13 +257,16 @@ export default function GalleryPage() {
     load();
   }, []);
 
+  const names = categories.map((c) => c.name);
+
   return (
     <div>
       <div className="page-header">
         <div>
           <h1>Gallery</h1>
-          <p>Manage local and international gallery images</p>
+          <p>Manage gallery image categories</p>
         </div>
+        <AddCategoryForm existingNames={names} onAdded={load} />
       </div>
 
       {error && <div className="banner-error">{error}</div>}
@@ -154,15 +274,15 @@ export default function GalleryPage() {
       {loading ? (
         <div className="loading-state">Loading gallery…</div>
       ) : (
-        <>
-          <GallerySection title="Local" type="local" images={gallery.local} onChanged={load} />
+        categories.map((c) => (
           <GallerySection
-            title="International"
-            type="international"
-            images={gallery.international}
+            key={c.name}
+            category={c.name}
+            images={c.images}
+            otherCategories={names.filter((n) => n !== c.name)}
             onChanged={load}
           />
-        </>
+        ))
       )}
     </div>
   );

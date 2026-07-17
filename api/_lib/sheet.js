@@ -75,4 +75,21 @@ function getSheetRows(workbook, sheetName) {
   );
 }
 
-module.exports = { fetchWorkbook, getSheetRows, SHEET_ID };
+// Header names only (trimmed, blanks dropped), independent of whether the
+// sheet has any data rows yet — a category with zero images still needs to
+// show up as an (empty) list.
+function getHeaderRow(workbook, sheetName) {
+  const sheet = workbook.Sheets[sheetName];
+  if (!sheet || !sheet['!ref']) return [];
+
+  const range = XLSX.utils.decode_range(sheet['!ref']);
+  const header = [];
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    const cell = sheet[XLSX.utils.encode_cell({ r: range.s.r, c })];
+    const name = cell ? String(cell.v ?? '').trim() : '';
+    if (name) header.push(name);
+  }
+  return header;
+}
+
+module.exports = { fetchWorkbook, getSheetRows, getHeaderRow, SHEET_ID };
