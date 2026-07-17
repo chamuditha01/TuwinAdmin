@@ -174,3 +174,62 @@
   color: #8a8f9c;
   font-size: 14px;
 }
+
+/* Below this width, tables drop the grid layout and become a stack of
+   label/value cards per row instead of scrolling sideways — small-screen
+   admin users are far more likely to be one-thumb scrolling than panning
+   a wide table left-right. */
+@media (max-width: 720px) {
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    padding: 12px 16px;
+    border-bottom: 8px solid #f5f6fa;
+  }
+
+  .table tr:last-child {
+    border-bottom: none;
+  }
+
+  .table td {
+    padding: 6px 0;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .table td[data-label]::before {
+    content: attr(data-label);
+    color: #8a8f9c;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+
+  .table .cell-truncate {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .table .row-actions {
+    justify-content: flex-end;
+    padding-top: 10px;
+  }
+}

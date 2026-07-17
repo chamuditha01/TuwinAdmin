@@ -154,10 +154,10 @@ export default function BioPage() {
             <tbody>
               {bios.map((b) => (
                 <tr key={b._row}>
-                  <td>{b.Name}</td>
-                  <td>{b.Birthday}</td>
-                  <td>{b['World Rank']}</td>
-                  <td>{b.Age}</td>
+                  <td data-label="Name">{b.Name}</td>
+                  <td data-label="Birthday">{b.Birthday}</td>
+                  <td data-label="World Rank">{b['World Rank']}</td>
+                  <td data-label="Age">{b.Age}</td>
                   <td className="row-actions">
                     <button className="btn btn-secondary btn-small" onClick={() => setModalMode(b)}>
                       Edit

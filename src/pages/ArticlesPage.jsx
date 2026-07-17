@@ -162,12 +162,12 @@ export default function ArticlesPage() {
             <tbody>
               {articles.map((a) => (
                 <tr key={a._row}>
-                  <td className="cell-truncate" title={a.title}>
+                  <td className="cell-truncate" data-label="Title" title={a.title}>
                     {a.title}
                   </td>
-                  <td>{a.category}</td>
-                  <td>{a.source}</td>
-                  <td>{a.date}</td>
+                  <td data-label="Category">{a.category}</td>
+                  <td data-label="Source">{a.source}</td>
+                  <td data-label="Date">{a.date}</td>
                   <td className="row-actions">
                     <button className="btn btn-secondary btn-small" onClick={() => setModalMode(a)}>
                       Edit
