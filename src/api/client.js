@@ -48,6 +48,20 @@ export const updateSponsor = (row, sponsor) =>
   request(`/api/sponsors?row=${row}`, { method: 'PUT', body: JSON.stringify(sponsor) });
 export const deleteSponsor = (row) => request(`/api/sponsors?row=${row}`, { method: 'DELETE' });
 
+// Packages
+export const getPackages = () => request('/api/packages');
+export const addPackage = (pkg) =>
+  request('/api/packages', { method: 'POST', body: JSON.stringify(pkg) });
+export const updatePackage = (row, pkg) =>
+  request(`/api/packages?row=${row}`, { method: 'PUT', body: JSON.stringify(pkg) });
+export const deletePackage = (row) => request(`/api/packages?row=${row}`, { method: 'DELETE' });
+
+// Cloudinary delete goes through the backend (needs the API secret) — used
+// when an image is removed from a set (e.g. Packages' Image_Set) before the
+// row is saved, so it doesn't just get orphaned on Cloudinary.
+export const deleteCloudinaryAsset = (url) =>
+  request('/api/cloudinary-delete', { method: 'POST', body: JSON.stringify({ url }) });
+
 // Cloudinary — direct unsigned upload from the browser, no backend involved.
 export async function uploadToCloudinary(file, onProgress, folder = 'gallery') {
   const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;

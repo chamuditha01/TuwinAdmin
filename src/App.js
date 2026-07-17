@@ -4,6 +4,7 @@ import ArticlesPage from './pages/ArticlesPage';
 import GalleryPage from './pages/GalleryPage';
 import BioPage from './pages/BioPage';
 import SponsorsPage from './pages/SponsorsPage';
+import PackagesPage from './pages/PackagesPage';
 import './styles/admin.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/bio" element={<BioPage />} />
           <Route path="/sponsors" element={<SponsorsPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

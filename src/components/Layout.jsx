@@ -19,6 +19,9 @@ export default function Layout() {
           <NavLink to="/sponsors" className={({ isActive }) => (isActive ? 'active' : '')}>
             Sponsors
           </NavLink>
+          <NavLink to="/packages" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Packages
+          </NavLink>
         </nav>
       </aside>
       <main className="content">

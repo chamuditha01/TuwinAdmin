@@ -175,6 +175,72 @@
   font-size: 14px;
 }
 
+.package-image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.package-image-thumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #eef0f4;
+  border: 1px solid #eef0f4;
+}
+
+.package-image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.package-image-thumb button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(17, 19, 28, 0.65);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.package-image-thumb button:hover {
+  background: rgba(185, 28, 28, 0.9);
+}
+
+.package-image-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.package-image-strip img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #eef0f4;
+}
+
+.package-image-strip span {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: 2px;
+}
+
 /* Below this width, tables drop the grid layout and become a stack of
    label/value cards per row instead of scrolling sideways — small-screen
    admin users are far more likely to be one-thumb scrolling than panning
