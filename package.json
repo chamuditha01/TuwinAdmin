@@ -50,7 +50,6 @@
     "concurrently": "^10.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "netlify-cli": "^26.2.0",
     "vercel": "^56.2.1"
   }
 }
