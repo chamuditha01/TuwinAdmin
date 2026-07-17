@@ -7,16 +7,26 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "ajv": "^8.20.0",
+    "cloudinary": "^2.10.0",
+    "googleapis": "^173.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
+  "proxy": "http://localhost:5001",
   "scripts": {
     "start": "react-scripts start",
+    "dev:api": "node server/dev.js",
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:start\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "netlify:dev": "netlify dev",
+    "deploy:netlify": "netlify deploy --prod"
   },
   "eslintConfig": {
     "extends": [
@@ -35,5 +45,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "netlify-cli": "^26.2.0",
+    "vercel": "^56.2.1"
   }
 }

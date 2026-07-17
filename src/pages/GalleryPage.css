@@ -1,0 +1,83 @@
+.gallery-section {
+  margin-bottom: 36px;
+}
+
+.gallery-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.gallery-section-header h2 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.gallery-section-header p {
+  margin: 2px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.gallery-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef0f4;
+  border: 1px solid #eef0f4;
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-card-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.gallery-card-move,
+.gallery-card-delete {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(17, 19, 28, 0.65);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-card-move:hover {
+  background: rgba(79, 70, 229, 0.9);
+}
+
+.gallery-card-delete:hover {
+  background: rgba(185, 28, 28, 0.9);
+}
+
+.gallery-card-move:disabled,
+.gallery-card-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
