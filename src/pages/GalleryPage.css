@@ -11,6 +11,24 @@
   flex-wrap: wrap;
 }
 
+.gallery-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gallery-reorder {
+  display: flex;
+  gap: 4px;
+}
+
+.gallery-reorder .btn {
+  padding: 6px 10px;
+  font-size: 15px;
+  line-height: 1;
+}
+
 .gallery-section-header h2 {
   font-size: 17px;
   margin: 0;

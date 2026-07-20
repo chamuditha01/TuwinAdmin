@@ -6,17 +6,19 @@ import {
   moveGalleryImage,
   addGalleryCategory,
   deleteGalleryCategory,
+  reorderGalleryCategory,
   uploadToCloudinary,
 } from '../api/client';
 import './GalleryPage.css';
 
-function GallerySection({ category, images, otherCategories, onChanged }) {
+function GallerySection({ category, images, otherCategories, isFirst, isLast, onChanged }) {
   const fileInputRef = useRef(null);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState('');
   const [deletingRow, setDeletingRow] = useState(null);
   const [movingRow, setMovingRow] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
+  const [reordering, setReordering] = useState(false);
 
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
@@ -74,6 +76,18 @@ function GallerySection({ category, images, otherCategories, onChanged }) {
     }
   };
 
+  const handleReorder = async (direction) => {
+    setReordering(true);
+    try {
+      await reorderGalleryCategory(category, direction);
+      await onChanged();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setReordering(false);
+    }
+  };
+
   const handleDeleteCategory = async () => {
     const warning =
       images.length > 0
@@ -98,31 +112,51 @@ function GallerySection({ category, images, otherCategories, onChanged }) {
           <h2>{category}</h2>
           <p>{images.length} image{images.length === 1 ? '' : 's'}</p>
         </div>
-        <button
-          className="btn btn-secondary btn-small"
-          onClick={handleDeleteCategory}
-          disabled={deletingCategory}
-          title="Delete this category"
-        >
-          {deletingCategory ? 'Deleting…' : 'Delete Category'}
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={progress !== null}
-        >
-          {progress !== null
-            ? `Uploading ${progress.index}/${progress.total}… ${progress.pct}%`
-            : '+ Upload Images'}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={handleFileChange}
-        />
+        <div className="gallery-section-actions">
+          <div className="gallery-reorder">
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleReorder('left')}
+              disabled={reordering || isFirst}
+              title="Move category left"
+            >
+              ‹
+            </button>
+            <button
+              className="btn btn-secondary btn-small"
+              onClick={() => handleReorder('right')}
+              disabled={reordering || isLast}
+              title="Move category right"
+            >
+              ›
+            </button>
+          </div>
+          <button
+            className="btn btn-secondary btn-small"
+            onClick={handleDeleteCategory}
+            disabled={deletingCategory}
+            title="Delete this category"
+          >
+            {deletingCategory ? 'Deleting…' : 'Delete Category'}
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={progress !== null}
+          >
+            {progress !== null
+              ? `Uploading ${progress.index}/${progress.total}… ${progress.pct}%`
+              : '+ Upload Images'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={handleFileChange}
+          />
+        </div>
       </div>
 
       {error && <div className="banner-error">{error}</div>}
@@ -274,12 +308,14 @@ export default function GalleryPage() {
       {loading ? (
         <div className="loading-state">Loading gallery…</div>
       ) : (
-        categories.map((c) => (
+        categories.map((c, i) => (
           <GallerySection
             key={c.name}
             category={c.name}
             images={c.images}
             otherCategories={names.filter((n) => n !== c.name)}
+            isFirst={i === 0}
+            isLast={i === categories.length - 1}
             onChanged={load}
           />
         ))

@@ -32,6 +32,8 @@ export const addGalleryCategory = (name) =>
   request('/api/gallery-categories', { method: 'POST', body: JSON.stringify({ name }) });
 export const deleteGalleryCategory = (name) =>
   request(`/api/gallery-categories?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
+export const reorderGalleryCategory = (name, direction) =>
+  request('/api/gallery-categories', { method: 'PATCH', body: JSON.stringify({ name, direction }) });
 
 // Bio
 export const getBios = () => request('/api/bio');

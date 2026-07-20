@@ -3,6 +3,31 @@ const { SHEET_ID } = require('./_lib/sheet');
 const { SHEET_NAME, columnLetter, getLiveCategories } = require('./_lib/galleryColumns');
 const { deleteByUrl } = require('./_lib/cloudinary');
 
+// Swaps two whole columns (header + every data cell) so reordering doesn't
+// depend on the Sheets API's moveDimension index semantics — just read both
+// columns' current contents and write each one into the other's place.
+async function swapColumns(sheets, colA, colB) {
+  const [resA, resB] = await Promise.all([
+    sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_NAME}!${colA}:${colA}` }),
+    sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: `${SHEET_NAME}!${colB}:${colB}` }),
+  ]);
+  const valuesA = resA.data.values || [];
+  const valuesB = resB.data.values || [];
+  const maxLen = Math.max(valuesA.length, valuesB.length);
+  const pad = (arr) => Array.from({ length: maxLen }, (_, i) => arr[i] || ['']);
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      valueInputOption: 'RAW',
+      data: [
+        { range: `${SHEET_NAME}!${colA}1:${colA}${maxLen}`, values: pad(valuesB) },
+        { range: `${SHEET_NAME}!${colB}1:${colB}${maxLen}`, values: pad(valuesA) },
+      ],
+    },
+  });
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method === 'POST') {
@@ -72,7 +97,29 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    res.setHeader('Allow', 'POST, DELETE');
+    if (req.method === 'PATCH') {
+      const name = String(req.body?.name || '').trim();
+      const direction = req.body?.direction;
+      if (!name) return res.status(400).json({ error: 'Missing category name' });
+      if (direction !== 'left' && direction !== 'right') {
+        return res.status(400).json({ error: 'direction must be "left" or "right"' });
+      }
+
+      const sheets = getSheetsClient();
+      const categories = await getLiveCategories(sheets);
+      const index = categories.findIndex((c) => c.name === name);
+      if (index === -1) return res.status(404).json({ error: `Unknown category "${name}"` });
+
+      const partnerIndex = direction === 'left' ? index - 1 : index + 1;
+      if (partnerIndex < 0 || partnerIndex >= categories.length) {
+        return res.status(400).json({ error: `Category "${name}" is already at the ${direction} end` });
+      }
+
+      await swapColumns(sheets, categories[index].col, categories[partnerIndex].col);
+      return res.status(200).json({ ok: true });
+    }
+
+    res.setHeader('Allow', 'POST, PATCH, DELETE');
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error('gallery-categories handler error:', err);
