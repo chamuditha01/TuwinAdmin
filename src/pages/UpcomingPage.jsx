@@ -1,20 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Modal from '../components/Modal';
-import { getUpcoming, addUpcoming, updateUpcoming, deleteUpcoming } from '../api/client';
+import {
+  getUpcoming,
+  addUpcoming,
+  updateUpcoming,
+  deleteUpcoming,
+  uploadToCloudinary,
+} from '../api/client';
 
-const EMPTY_FORM = { Name: '', Venue: '', 'Tournament Size': '', 'Start Date': '', 'End Date': '' };
+const EMPTY_FORM = {
+  Name: '',
+  Venue: '',
+  'Tournament Size': '',
+  'Start Date': '',
+  'End Date': '',
+  'Tournament Category': '',
+  'Finished Position': '',
+  Status: '',
+  logo: '',
+};
 
 function UpcomingForm({ initial, onCancel, onSave }) {
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(null);
   const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const isCompleted = form.Status === 'completed';
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setError('');
+    setUploading(0);
+    try {
+      const url = await uploadToCloudinary(file, setUploading, 'upcoming');
+      setForm((f) => ({ ...f, logo: url }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form['Start Date'] && form['End Date'] && form['End Date'] < form['Start Date']) {
       setError('End Date cannot be before Start Date.');
+      return;
+    }
+    if (isCompleted && !form['Finished Position'].trim()) {
+      setError('Finished Position is required when Status is Completed.');
       return;
     }
     setSaving(true);
@@ -50,11 +90,52 @@ function UpcomingForm({ initial, onCancel, onSave }) {
         <label>End Date</label>
         <input type="date" value={form['End Date']} onChange={setField('End Date')} required />
       </div>
+      <div className="form-field">
+        <label>Tournament Category</label>
+        <input value={form['Tournament Category']} onChange={setField('Tournament Category')} />
+      </div>
+      <div className="form-field">
+        <label>Logo</label>
+        {form.logo && (
+          <img
+            src={form.logo}
+            alt=""
+            style={{ width: 80, height: 80, objectFit: 'contain', display: 'block', marginBottom: 8 }}
+          />
+        )}
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading !== null}
+        >
+          {uploading !== null ? `Uploading… ${uploading}%` : form.logo ? 'Replace Logo' : 'Upload Logo'}
+        </button>
+        <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
+      </div>
+      <div className="form-field">
+        <label>Status</label>
+        <select value={form.Status} onChange={setField('Status')} required>
+          <option value="" disabled>
+            Select status
+          </option>
+          <option value="upcoming">Upcoming</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div className="form-field">
+        <label>Finished Position{isCompleted ? '' : ' (only needed once Completed)'}</label>
+        <input
+          value={form['Finished Position']}
+          onChange={setField('Finished Position')}
+          required={isCompleted}
+        />
+      </div>
       <div className="form-actions">
         <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
           Cancel
         </button>
-        <button type="submit" className="btn btn-primary" disabled={saving}>
+        <button type="submit" className="btn btn-primary" disabled={saving || uploading !== null}>
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
@@ -135,22 +216,36 @@ export default function UpcomingPage() {
           <table className="table">
             <thead>
               <tr>
+                <th>Logo</th>
                 <th>Name</th>
                 <th>Venue</th>
                 <th>Size</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Finished</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {tournaments.map((t) => (
                 <tr key={t._row}>
+                  <td data-label="Logo">
+                    {t.logo && (
+                      <img src={t.logo} alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                    )}
+                  </td>
                   <td data-label="Name">{t.Name}</td>
                   <td data-label="Venue">{t.Venue}</td>
                   <td data-label="Size">{t['Tournament Size']}</td>
                   <td data-label="Start Date">{t['Start Date']}</td>
                   <td data-label="End Date">{t['End Date']}</td>
+                  <td data-label="Category">{t['Tournament Category']}</td>
+                  <td data-label="Status" style={{ textTransform: 'capitalize' }}>
+                    {t.Status}
+                  </td>
+                  <td data-label="Finished">{t['Finished Position']}</td>
                   <td className="row-actions">
                     <button className="btn btn-secondary btn-small" onClick={() => setModalMode(t)}>
                       Edit

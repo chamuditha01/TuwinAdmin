@@ -8,7 +8,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Sponsors** tab — full CRUD for Name / logo (Cloudinary upload, like Gallery) / Status (`current`/`former` dropdown) / Description. Replacing or deleting a logo cleans up the old Cloudinary asset.
 - **Packages** tab — full CRUD for Tier Name / Title / Price / Benefits (one per line) / Image_Set (multiple Cloudinary-uploaded images per package, stored as a comma-separated list of URLs). Removing an image before saving, or deleting the whole package, cleans up the Cloudinary assets.
 - **Rankings** tab — full CRUD for date / ranking (a simple time series).
-- **Upcoming** tab — full CRUD for Name / Venue / Tournament Size / Start Date / End Date, sheet name `UpcomingTournaments`. Rejects saving if End Date is before Start Date.
+- **Upcoming** tab — full CRUD for Name / Venue / Tournament Size / Start Date / End Date / Tournament Category / Status (`upcoming`/`completed` dropdown) / Finished Position / logo (Cloudinary upload, like Sponsors), sheet name `UpcomingTournaments`. Rejects saving if End Date is before Start Date, or if Status is Completed without a Finished Position.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
