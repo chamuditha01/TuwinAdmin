@@ -6,6 +6,7 @@ import BioPage from './pages/BioPage';
 import SponsorsPage from './pages/SponsorsPage';
 import PackagesPage from './pages/PackagesPage';
 import RankingsPage from './pages/RankingsPage';
+import UpcomingPage from './pages/UpcomingPage';
 import './styles/admin.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/sponsors" element={<SponsorsPage />} />
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/upcoming" element={<UpcomingPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

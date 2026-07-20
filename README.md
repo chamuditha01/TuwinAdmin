@@ -8,6 +8,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Sponsors** tab — full CRUD for Name / logo (Cloudinary upload, like Gallery) / Status (`current`/`former` dropdown) / Description. Replacing or deleting a logo cleans up the old Cloudinary asset.
 - **Packages** tab — full CRUD for Tier Name / Title / Price / Benefits (one per line) / Image_Set (multiple Cloudinary-uploaded images per package, stored as a comma-separated list of URLs). Removing an image before saving, or deleting the whole package, cleans up the Cloudinary assets.
 - **Rankings** tab — full CRUD for date / ranking (a simple time series).
+- **Upcoming** tab — full CRUD for Name / Venue / Tournament Size / Start Date / End Date, sheet name `UpcomingTournaments`. Rejects saving if End Date is before Start Date.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -126,6 +127,7 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   sponsors.js          GET/POST/PUT/DELETE for the Sponsors tab
   packages.js          GET/POST/PUT/DELETE for the Packages tab
   rankings.js          GET/POST/PUT/DELETE for the Rankings tab
+  upcoming.js          GET/POST/PUT/DELETE for the Upcoming tab (sheet: UpcomingTournaments)
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
 netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect
@@ -133,5 +135,5 @@ server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage
 ```
