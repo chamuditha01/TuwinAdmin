@@ -14,6 +14,7 @@ const packages = require('../api/packages');
 const cloudinaryDelete = require('../api/cloudinary-delete');
 const rankings = require('../api/rankings');
 const upcoming = require('../api/upcoming');
+const coachClub = require('../api/coach-club');
 
 const app = express();
 app.use(express.json());
@@ -27,6 +28,7 @@ app.all('/api/packages', (req, res) => packages(req, res));
 app.all('/api/cloudinary-delete', (req, res) => cloudinaryDelete(req, res));
 app.all('/api/rankings', (req, res) => rankings(req, res));
 app.all('/api/upcoming', (req, res) => upcoming(req, res));
+app.all('/api/coach-club', (req, res) => coachClub(req, res));
 
 const port = process.env.API_PORT || 5001;
 app.listen(port, () => {

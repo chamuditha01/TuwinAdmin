@@ -8,7 +8,8 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Sponsors** tab — full CRUD for Name / logo (Cloudinary upload, like Gallery) / Status (`current`/`former` dropdown) / Description. Replacing or deleting a logo cleans up the old Cloudinary asset.
 - **Packages** tab — full CRUD for Tier Name / Title / Price / Benefits (one per line) / Image_Set (multiple Cloudinary-uploaded images per package, stored as a comma-separated list of URLs). Removing an image before saving, or deleting the whole package, cleans up the Cloudinary assets.
 - **Rankings** tab — full CRUD for date / ranking (a simple time series).
-- **Upcoming** tab — full CRUD for Name / Venue / Tournament Size / Start Date / End Date / Tournament Category / Status (`upcoming`/`completed` dropdown) / Finished Position / logo (Cloudinary upload, like Sponsors), sheet name `UpcomingTournaments`. Rejects saving if End Date is before Start Date, or if Status is Completed without a Finished Position.
+- **Upcoming** tab — full CRUD for Name / Venue / Tournament Size / Start Date / End Date / Tournament Category / Status (`upcoming`/`completed` dropdown) / Finished Position / logo (multiple Cloudinary-uploaded images, comma-separated, like Packages' Image_Set), sheet name `UpcomingTournaments`. Rejects saving if End Date is before Start Date, or if Status is Completed without a Finished Position.
+- **Coach & Club** tab — full CRUD for Name / Image (single Cloudinary upload, like Sponsors) / Profile / Biography, sheet name `Coach&Club`. Its `&` requires quoting in every Sheets API range (`'Coach&Club'!A1:D`) — worth remembering if this tab is ever touched directly.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -128,6 +129,7 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   packages.js          GET/POST/PUT/DELETE for the Packages tab
   rankings.js          GET/POST/PUT/DELETE for the Rankings tab
   upcoming.js          GET/POST/PUT/DELETE for the Upcoming tab (sheet: UpcomingTournaments)
+  coach-club.js        GET/POST/PUT/DELETE for the Coach & Club tab (sheet: Coach&Club)
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
 netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect

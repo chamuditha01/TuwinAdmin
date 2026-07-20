@@ -74,6 +74,14 @@ export const updateUpcoming = (row, tournament) =>
   request(`/api/upcoming?row=${row}`, { method: 'PUT', body: JSON.stringify(tournament) });
 export const deleteUpcoming = (row) => request(`/api/upcoming?row=${row}`, { method: 'DELETE' });
 
+// Coach & Club
+export const getCoachClub = () => request('/api/coach-club');
+export const addCoachClub = (entry) =>
+  request('/api/coach-club', { method: 'POST', body: JSON.stringify(entry) });
+export const updateCoachClub = (row, entry) =>
+  request(`/api/coach-club?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
+export const deleteCoachClub = (row) => request(`/api/coach-club?row=${row}`, { method: 'DELETE' });
+
 // Cloudinary delete goes through the backend (needs the API secret) — used
 // when an image is removed from a set (e.g. Packages' Image_Set) before the
 // row is saved, so it doesn't just get orphaned on Cloudinary.

@@ -28,6 +28,9 @@ export default function Layout() {
           <NavLink to="/upcoming" className={({ isActive }) => (isActive ? 'active' : '')}>
             Upcoming
           </NavLink>
+          <NavLink to="/coach-club" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Coach &amp; Club
+          </NavLink>
         </nav>
       </aside>
       <main className="content">

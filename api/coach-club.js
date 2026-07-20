@@ -2,35 +2,15 @@ const { fetchWorkbook, getSheetRows, SHEET_ID } = require('./_lib/sheet');
 const { getSheetsClient, getTabId } = require('./_lib/sheetsClient');
 const { deleteByUrl } = require('./_lib/cloudinary');
 
-const SHEET_NAME = 'UpcomingTournaments';
-const COLUMNS = [
-  'Name',
-  'Venue',
-  'Tournament Size',
-  'Start Date',
-  'End Date',
-  'Tournament Category',
-  'Finished Position',
-  'Status',
-  'logo',
-];
-const STATUSES = ['upcoming', 'completed'];
-const LOGO_COL = 'I'; // 9th column, matches COLUMNS order above
+const SHEET_NAME = 'Coach&Club';
+// The sheet name contains "&", which A1 range notation requires quoting —
+// unlike every other tab here, so this can't just be `${SHEET_NAME}!...`.
+const RANGE_PREFIX = `'${SHEET_NAME}'`;
+const COLUMNS = ['Name', 'Profile', 'Biography', 'Image Url'];
+const IMAGE_COL = 'D';
 
 function rowToValues(body) {
   return COLUMNS.map((key) => (body[key] ?? '').toString());
-}
-
-function validateBody(body) {
-  const status = body?.Status;
-  if (!STATUSES.includes(status)) {
-    throw Object.assign(new Error(`Status must be one of: ${STATUSES.join(', ')}`), { status: 400 });
-  }
-  if (status === 'completed' && !String(body['Finished Position'] ?? '').trim()) {
-    throw Object.assign(new Error('Finished Position is required when Status is Completed'), {
-      status: 400,
-    });
-  }
 }
 
 module.exports = async function handler(req, res) {
@@ -42,15 +22,10 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      validateBody(req.body);
-
       const sheets = getSheetsClient();
       await sheets.spreadsheets.values.append({
         spreadsheetId: SHEET_ID,
-        range: `${SHEET_NAME}!A:I`,
-        // RAW stores both dates exactly as given (plain text) instead of
-        // letting Sheets auto-parse them, which round-trips through the
-        // spreadsheet's locale and can shift the date by a day.
+        range: `${RANGE_PREFIX}!A:D`,
         valueInputOption: 'RAW',
         requestBody: { values: [rowToValues(req.body)] },
       });
@@ -60,20 +35,31 @@ module.exports = async function handler(req, res) {
     if (req.method === 'PUT') {
       const row = Number(req.query.row);
       if (!row || row < 2) return res.status(400).json({ error: 'Missing or invalid row' });
-      validateBody(req.body);
 
       const sheets = getSheetsClient();
 
-      // Unlike a single-image field, logos are removed one at a time from
-      // the UI (each removal immediately deletes that Cloudinary asset), so
-      // by the time this PUT lands the set already reflects what should
-      // exist — no before/after diffing needed here.
+      // If the image was replaced, the old Cloudinary asset would otherwise
+      // be orphaned — read what's currently stored so it can be cleaned up
+      // once the new value is safely saved.
+      const current = await sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: `${RANGE_PREFIX}!${IMAGE_COL}${row}`,
+      });
+      const previousImage = current.data.values?.[0]?.[0];
+
       await sheets.spreadsheets.values.update({
         spreadsheetId: SHEET_ID,
-        range: `${SHEET_NAME}!A${row}:I${row}`,
+        range: `${RANGE_PREFIX}!A${row}:D${row}`,
         valueInputOption: 'RAW',
         requestBody: { values: [rowToValues(req.body)] },
       });
+
+      const newImage = req.body?.['Image Url'];
+      if (previousImage && previousImage !== newImage) {
+        deleteByUrl(previousImage).catch((err) =>
+          console.warn('Cloudinary delete failed:', err.message)
+        );
+      }
 
       return res.status(200).json({ ok: true });
     }
@@ -86,9 +72,9 @@ module.exports = async function handler(req, res) {
 
       const current = await sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
-        range: `${SHEET_NAME}!${LOGO_COL}${row}`,
+        range: `${RANGE_PREFIX}!${IMAGE_COL}${row}`,
       });
-      const logos = current.data.values?.[0]?.[0];
+      const image = current.data.values?.[0]?.[0];
 
       const sheetId = await getTabId(SHEET_NAME);
       await sheets.spreadsheets.batchUpdate({
@@ -109,14 +95,8 @@ module.exports = async function handler(req, res) {
         },
       });
 
-      if (logos) {
-        logos
-          .split(',')
-          .map((url) => url.trim())
-          .filter(Boolean)
-          .forEach((url) => {
-            deleteByUrl(url).catch((err) => console.warn('Cloudinary delete failed:', err.message));
-          });
+      if (image) {
+        deleteByUrl(image).catch((err) => console.warn('Cloudinary delete failed:', err.message));
       }
 
       return res.status(200).json({ ok: true });
@@ -125,7 +105,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST, PUT, DELETE');
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error('upcoming handler error:', err);
+    console.error('coach-club handler error:', err);
     return res.status(err.status || 500).json({ error: err.message || 'Internal error' });
   }
 };

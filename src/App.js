@@ -7,6 +7,7 @@ import SponsorsPage from './pages/SponsorsPage';
 import PackagesPage from './pages/PackagesPage';
 import RankingsPage from './pages/RankingsPage';
 import UpcomingPage from './pages/UpcomingPage';
+import CoachClubPage from './pages/CoachClubPage';
 import './styles/admin.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/upcoming" element={<UpcomingPage />} />
+          <Route path="/coach-club" element={<CoachClubPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

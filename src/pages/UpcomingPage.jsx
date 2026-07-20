@@ -6,6 +6,7 @@ import {
   updateUpcoming,
   deleteUpcoming,
   uploadToCloudinary,
+  deleteCloudinaryAsset,
 } from '../api/client';
 
 const EMPTY_FORM = {
@@ -20,10 +21,18 @@ const EMPTY_FORM = {
   logo: '',
 };
 
+function logoUrls(logo) {
+  return String(logo ?? '')
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
 function UpcomingForm({ initial, onCancel, onSave }) {
   const [form, setForm] = useState(initial);
+  const [logos, setLogos] = useState(() => logoUrls(initial.logo));
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(null);
+  const [progress, setProgress] = useState(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
@@ -31,20 +40,33 @@ function UpcomingForm({ initial, onCancel, onSave }) {
   const isCompleted = form.Status === 'completed';
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files);
     e.target.value = '';
-    if (!file) return;
+    if (files.length === 0) return;
 
     setError('');
-    setUploading(0);
-    try {
-      const url = await uploadToCloudinary(file, setUploading, 'upcoming');
-      setForm((f) => ({ ...f, logo: url }));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setUploading(null);
+    const failed = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setProgress({ index: i + 1, total: files.length, pct: 0 });
+      try {
+        const url = await uploadToCloudinary(
+          file,
+          (pct) => setProgress({ index: i + 1, total: files.length, pct }),
+          'upcoming'
+        );
+        setLogos((prev) => [...prev, url]);
+      } catch (err) {
+        failed.push(`${file.name}: ${err.message}`);
+      }
     }
+    setProgress(null);
+    if (failed.length > 0) setError(`Some uploads failed — ${failed.join('; ')}`);
+  };
+
+  const handleRemoveLogo = (url) => {
+    setLogos((prev) => prev.filter((u) => u !== url));
+    deleteCloudinaryAsset(url).catch((err) => console.warn('Cloudinary delete failed:', err.message));
   };
 
   const handleSubmit = async (e) => {
@@ -60,7 +82,7 @@ function UpcomingForm({ initial, onCancel, onSave }) {
     setSaving(true);
     setError('');
     try {
-      await onSave(form);
+      await onSave({ ...form, logo: logos.join(',') });
     } catch (err) {
       setError(err.message);
       setSaving(false);
@@ -95,23 +117,37 @@ function UpcomingForm({ initial, onCancel, onSave }) {
         <input value={form['Tournament Category']} onChange={setField('Tournament Category')} />
       </div>
       <div className="form-field">
-        <label>Logo</label>
-        {form.logo && (
-          <img
-            src={form.logo}
-            alt=""
-            style={{ width: 80, height: 80, objectFit: 'contain', display: 'block', marginBottom: 8 }}
-          />
+        <label>Logos</label>
+        {logos.length > 0 && (
+          <div className="package-image-grid">
+            {logos.map((url) => (
+              <div className="package-image-thumb" key={url}>
+                <img src={url} alt="" />
+                <button type="button" onClick={() => handleRemoveLogo(url)} title="Remove logo">
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
         )}
         <button
           type="button"
           className="btn btn-secondary"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading !== null}
+          disabled={progress !== null}
         >
-          {uploading !== null ? `Uploading… ${uploading}%` : form.logo ? 'Replace Logo' : 'Upload Logo'}
+          {progress !== null
+            ? `Uploading ${progress.index}/${progress.total}… ${progress.pct}%`
+            : 'Upload Logos'}
         </button>
-        <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={handleFileChange}
+        />
       </div>
       <div className="form-field">
         <label>Status</label>
@@ -135,7 +171,7 @@ function UpcomingForm({ initial, onCancel, onSave }) {
         <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
           Cancel
         </button>
-        <button type="submit" className="btn btn-primary" disabled={saving || uploading !== null}>
+        <button type="submit" className="btn btn-primary" disabled={saving || progress !== null}>
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
@@ -232,9 +268,18 @@ export default function UpcomingPage() {
               {tournaments.map((t) => (
                 <tr key={t._row}>
                   <td data-label="Logo">
-                    {t.logo && (
-                      <img src={t.logo} alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-                    )}
+                    {(() => {
+                      const urls = logoUrls(t.logo);
+                      if (urls.length === 0) return '—';
+                      return (
+                        <div className="package-image-strip">
+                          {urls.slice(0, 3).map((url) => (
+                            <img key={url} src={url} alt="" />
+                          ))}
+                          {urls.length > 3 && <span>+{urls.length - 3}</span>}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td data-label="Name">{t.Name}</td>
                   <td data-label="Venue">{t.Venue}</td>
