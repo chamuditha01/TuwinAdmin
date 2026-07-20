@@ -8,16 +8,26 @@ import {
   uploadToCloudinary,
 } from '../api/client';
 
-const EMPTY_FORM = { Name: '', Profile: '', Biography: '', 'Image Url': '' };
+const EMPTY_FORM = { Name: '', Profile: [], Biography: '', 'Image Url': '' };
 
 function CoachClubForm({ initial, onCancel, onSave }) {
   const [form, setForm] = useState(initial);
+  const [points, setPoints] = useState(() => (initial.Profile.length > 0 ? initial.Profile : ['']));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(null);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setPoint = (i) => (e) =>
+    setPoints((prev) => prev.map((p, idx) => (idx === i ? e.target.value : p)));
+
+  const handleAddPoint = () => setPoints((prev) => [...prev, '']);
+  const handleRemovePoint = (i) => setPoints((prev) => prev.filter((_, idx) => idx !== i));
+  const handleDeleteAllPoints = () => {
+    if (points.some((p) => p.trim()) && !window.confirm('Remove all profile points?')) return;
+    setPoints([]);
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -41,7 +51,7 @@ function CoachClubForm({ initial, onCancel, onSave }) {
     setSaving(true);
     setError('');
     try {
-      await onSave(form);
+      await onSave({ ...form, Profile: points });
     } catch (err) {
       setError(err.message);
       setSaving(false);
@@ -79,8 +89,30 @@ function CoachClubForm({ initial, onCancel, onSave }) {
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
       </div>
       <div className="form-field">
-        <label>Profile</label>
-        <textarea rows={5} value={form.Profile} onChange={setField('Profile')} />
+        <div className="profile-points-header">
+          <label>Profile (one point per row in the sheet)</label>
+          {points.length > 0 && (
+            <button type="button" className="btn btn-danger btn-small" onClick={handleDeleteAllPoints}>
+              Delete All Points
+            </button>
+          )}
+        </div>
+        {points.map((point, i) => (
+          <div className="profile-point-row" key={i}>
+            <textarea rows={2} value={point} onChange={setPoint(i)} />
+            <button
+              type="button"
+              className="btn btn-secondary btn-small"
+              onClick={() => handleRemovePoint(i)}
+              title="Remove this point"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button type="button" className="btn btn-secondary btn-small" onClick={handleAddPoint}>
+          + Add Point
+        </button>
       </div>
       <div className="form-field">
         <label>Biography</label>
@@ -191,8 +223,8 @@ export default function CoachClubPage() {
                     )}
                   </td>
                   <td data-label="Name">{e.Name}</td>
-                  <td className="cell-truncate" data-label="Profile" title={e.Profile}>
-                    {e.Profile}
+                  <td className="cell-truncate" data-label="Profile" title={e.Profile.join('\n')}>
+                    {e.Profile.length} point{e.Profile.length === 1 ? '' : 's'}
                   </td>
                   <td className="cell-truncate" data-label="Biography" title={e.Biography}>
                     {e.Biography}

@@ -241,6 +241,29 @@
   margin-left: 2px;
 }
 
+.profile-points-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.profile-points-header label {
+  margin-bottom: 0;
+}
+
+.profile-point-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.profile-point-row textarea {
+  flex: 1;
+}
+
 /* Below this width, tables drop the grid layout and become a stack of
    label/value cards per row instead of scrolling sideways — small-screen
    admin users are far more likely to be one-thumb scrolling than panning

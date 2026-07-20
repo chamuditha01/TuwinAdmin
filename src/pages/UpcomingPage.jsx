@@ -37,6 +37,12 @@ const TOURNAMENT_SIZES = [
   'PSA Challenger 15',
   'PSA Challenger 18',
   'PSA World Tour',
+  'PSA World Tour 3',
+  'PSA World Tour 6',
+  'PSA World Tour 9',
+  'PSA World Tour 12',
+  'PSA World Tour 15',
+  'PSA World Tour 18',
 ];
 
 const TOURNAMENT_CATEGORIES = ['Men’s'];
