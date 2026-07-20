@@ -12,6 +12,7 @@ const bio = require('../api/bio');
 const sponsors = require('../api/sponsors');
 const packages = require('../api/packages');
 const cloudinaryDelete = require('../api/cloudinary-delete');
+const rankings = require('../api/rankings');
 
 const app = express();
 app.use(express.json());
@@ -23,6 +24,7 @@ app.all('/api/bio', (req, res) => bio(req, res));
 app.all('/api/sponsors', (req, res) => sponsors(req, res));
 app.all('/api/packages', (req, res) => packages(req, res));
 app.all('/api/cloudinary-delete', (req, res) => cloudinaryDelete(req, res));
+app.all('/api/rankings', (req, res) => rankings(req, res));
 
 const port = process.env.API_PORT || 5001;
 app.listen(port, () => {
