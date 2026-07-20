@@ -137,5 +137,5 @@ server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage
 ```

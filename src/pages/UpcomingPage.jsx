@@ -28,9 +28,31 @@ function logoUrls(logo) {
     .filter(Boolean);
 }
 
+const TOURNAMENT_SIZES = [
+  'PSA Satellite',
+  'PSA Challenger 3',
+  'PSA Challenger 6',
+  'PSA Challenger 9',
+  'PSA Challenger 12',
+  'PSA Challenger 15',
+  'PSA Challenger 18',
+  'PSA World Tour',
+];
+
+const TOURNAMENT_CATEGORIES = ['Men’s'];
+
+// Older rows may hold a value outside a fixed list (freeform text from
+// before a field became a dropdown) — keep it selectable so editing the
+// row for something else doesn't silently wipe it out.
+function withExistingValue(fixedOptions, currentValue) {
+  return currentValue && !fixedOptions.includes(currentValue) ? [currentValue, ...fixedOptions] : fixedOptions;
+}
+
 function UpcomingForm({ initial, onCancel, onSave }) {
   const [form, setForm] = useState(initial);
   const [logos, setLogos] = useState(() => logoUrls(initial.logo));
+  const sizeOptions = withExistingValue(TOURNAMENT_SIZES, initial['Tournament Size']);
+  const categoryOptions = withExistingValue(TOURNAMENT_CATEGORIES, initial['Tournament Category']);
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState('');
@@ -102,7 +124,14 @@ function UpcomingForm({ initial, onCancel, onSave }) {
       </div>
       <div className="form-field">
         <label>Tournament Size</label>
-        <input value={form['Tournament Size']} onChange={setField('Tournament Size')} />
+        <select value={form['Tournament Size']} onChange={setField('Tournament Size')}>
+          <option value="">Select size</option>
+          {sizeOptions.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="form-field">
         <label>Start Date</label>
@@ -114,7 +143,14 @@ function UpcomingForm({ initial, onCancel, onSave }) {
       </div>
       <div className="form-field">
         <label>Tournament Category</label>
-        <input value={form['Tournament Category']} onChange={setField('Tournament Category')} />
+        <select value={form['Tournament Category']} onChange={setField('Tournament Category')}>
+          <option value="">Select category</option>
+          {categoryOptions.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="form-field">
         <label>Logos</label>
