@@ -1,4 +1,4 @@
 const { toNetlifyHandler } = require('./_adapter');
-const trainingHistory = require('../../api/training-history');
+const { TABS } = require('../../api/_lib/simpleTabs');
 
-exports.handler = toNetlifyHandler(trainingHistory);
+exports.handler = toNetlifyHandler(TABS['training-history']);

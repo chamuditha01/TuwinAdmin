@@ -126,22 +126,19 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   _lib/sheetsClient.js Google Sheets API (service account) write helper
   _lib/cloudinary.js   Cloudinary delete helper
   _lib/galleryColumns.js  Maps Gallery category names to sheet columns
+  _lib/genericCrud.js  Shared GET/POST/PUT/DELETE factory for plain one-row-per-entry tabs
+  _lib/simpleTabs.js   Config for the tabs merged behind [tab].js (see note below)
   articles.js          GET/POST/PUT/DELETE for the Articles tab
   gallery.js           GET/POST/PATCH/DELETE for the Gallery tab
   gallery-categories.js  POST/PATCH/DELETE to create, reorder, or remove a Gallery category (column)
   bio.js               GET/POST/PUT/DELETE for the Bio tab
   sponsors.js          GET/POST/PUT/DELETE for the Sponsors tab
   packages.js          GET/POST/PUT/DELETE for the Packages tab
-  rankings.js          GET/POST/PUT/DELETE for the Rankings tab
   upcoming.js          GET/POST/PUT/DELETE for the Upcoming tab (sheet: UpcomingTournaments)
   coach-club.js        GET/POST/PUT/DELETE for the Coach & Club tab (sheet: Coach&Club)
-  contact.js           GET/POST/PUT/DELETE for the Contact tab
-  career-achievements.js  GET/POST/PUT/DELETE for the Career Achievements tab
-  career-highlights.js  GET/POST/PUT/DELETE for the Career Highlights tab
-  competency-blueprint.js  GET/POST/PUT/DELETE for the Competency Blueprint tab
-  training-history.js   GET/POST/PUT/DELETE for the Training History tab
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
-netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
+  [tab].js              Dynamic route for Rankings, Career Achievements, Career Highlights, Competency Blueprint, Training History, Contact — see below
+netlify/functions/    Thin adapters that run api/*.js (or api/_lib/simpleTabs.js entries) as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect
 server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
@@ -149,3 +146,11 @@ src/
   components/          Layout, Modal
   pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage, CompetencyBlueprintPage, TrainingHistoryPage
 ```
+
+### Vercel's 12-function limit (Hobby plan)
+
+Vercel's free Hobby plan caps a deployment at 12 serverless functions, and every top-level file in `/api` counts as one. To leave room for future tabs, the plain "one sheet row per entry" tabs that have no image upload, dropdown, or multi-row logic of their own — **Rankings, Career Achievements, Career Highlights, Competency Blueprint, Training History, Contact** — are merged behind a single dynamic route, `api/[tab].js`, which dispatches to the right config in `api/_lib/simpleTabs.js` based on the URL (`/api/rankings` → `tab === 'rankings'`). Vercel counts this as **one** function no matter how many tab keys are added to `simpleTabs.js`. Frontend URLs are unaffected — `src/api/client.js` still calls `/api/rankings`, `/api/contact`, etc. as before.
+
+Netlify has no equivalent function-count limit, so `netlify/functions/` still has one file per tab (now importing its config from `api/_lib/simpleTabs.js` instead of a deleted standalone `api/*.js` file); `server/dev.js` mirrors the same dynamic dispatch via an Express catch-all route registered after the tabs that still have their own file.
+
+Tabs that need something beyond plain CRUD (image uploads, dropdowns, comma-separated multi-value fields with special parsing, multi-row entries) should stay as their own `api/*.js` file for clarity — only fold a new simple tab into `simpleTabs.js` if the function count is getting close to 12 again.

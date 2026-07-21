@@ -1,4 +1,4 @@
 const { toNetlifyHandler } = require('./_adapter');
-const competencyBlueprint = require('../../api/competency-blueprint');
+const { TABS } = require('../../api/_lib/simpleTabs');
 
-exports.handler = toNetlifyHandler(competencyBlueprint);
+exports.handler = toNetlifyHandler(TABS['competency-blueprint']);

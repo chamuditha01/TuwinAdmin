@@ -12,14 +12,9 @@ const bio = require('../api/bio');
 const sponsors = require('../api/sponsors');
 const packages = require('../api/packages');
 const cloudinaryDelete = require('../api/cloudinary-delete');
-const rankings = require('../api/rankings');
 const upcoming = require('../api/upcoming');
 const coachClub = require('../api/coach-club');
-const contact = require('../api/contact');
-const careerAchievements = require('../api/career-achievements');
-const careerHighlights = require('../api/career-highlights');
-const competencyBlueprint = require('../api/competency-blueprint');
-const trainingHistory = require('../api/training-history');
+const { TABS } = require('../api/_lib/simpleTabs');
 
 const app = express();
 app.use(express.json());
@@ -31,14 +26,16 @@ app.all('/api/bio', (req, res) => bio(req, res));
 app.all('/api/sponsors', (req, res) => sponsors(req, res));
 app.all('/api/packages', (req, res) => packages(req, res));
 app.all('/api/cloudinary-delete', (req, res) => cloudinaryDelete(req, res));
-app.all('/api/rankings', (req, res) => rankings(req, res));
 app.all('/api/upcoming', (req, res) => upcoming(req, res));
 app.all('/api/coach-club', (req, res) => coachClub(req, res));
-app.all('/api/contact', (req, res) => contact(req, res));
-app.all('/api/career-achievements', (req, res) => careerAchievements(req, res));
-app.all('/api/career-highlights', (req, res) => careerHighlights(req, res));
-app.all('/api/competency-blueprint', (req, res) => competencyBlueprint(req, res));
-app.all('/api/training-history', (req, res) => trainingHistory(req, res));
+
+// Rankings, Career Achievements, Career Highlights, Competency Blueprint,
+// Training History, Contact — mirrors api/[tab].js's dynamic dispatch.
+app.all('/api/:tab', (req, res) => {
+  const fn = TABS[req.params.tab];
+  if (!fn) return res.status(404).json({ error: 'Unknown resource' });
+  return fn(req, res);
+});
 
 const port = process.env.API_PORT || 5001;
 app.listen(port, () => {

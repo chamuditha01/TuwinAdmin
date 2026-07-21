@@ -1,4 +1,4 @@
 const { toNetlifyHandler } = require('./_adapter');
-const contact = require('../../api/contact');
+const { TABS } = require('../../api/_lib/simpleTabs');
 
-exports.handler = toNetlifyHandler(contact);
+exports.handler = toNetlifyHandler(TABS.contact);

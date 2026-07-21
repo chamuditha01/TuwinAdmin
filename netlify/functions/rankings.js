@@ -1,4 +1,4 @@
 const { toNetlifyHandler } = require('./_adapter');
-const rankings = require('../../api/rankings');
+const { TABS } = require('../../api/_lib/simpleTabs');
 
-exports.handler = toNetlifyHandler(rankings);
+exports.handler = toNetlifyHandler(TABS.rankings);
