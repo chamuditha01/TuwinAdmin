@@ -13,6 +13,7 @@ import CareerAchievementsPage from './pages/CareerAchievementsPage';
 import CareerHighlightsPage from './pages/CareerHighlightsPage';
 import CompetencyBlueprintPage from './pages/CompetencyBlueprintPage';
 import TrainingHistoryPage from './pages/TrainingHistoryPage';
+import BiographyPage from './pages/BiographyPage';
 import './styles/admin.css';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/career-highlights" element={<CareerHighlightsPage />} />
           <Route path="/competency-blueprint" element={<CompetencyBlueprintPage />} />
           <Route path="/training-history" element={<TrainingHistoryPage />} />
+          <Route path="/biography" element={<BiographyPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

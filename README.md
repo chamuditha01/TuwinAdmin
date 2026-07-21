@@ -15,6 +15,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Career Highlights** tab — full CRUD for year / title / description / tag / icon, sheet name `CareerHighlights`. Icon is a plain text/emoji field, not an image upload.
 - **Competency Blueprint** tab — full CRUD for a single-column list of blueprint names, sheet name `CompetencyBlueprint`.
 - **Training History** tab — full CRUD for title / heading / description, sheet name `TrainingHistory`.
+- **Biography** tab — a single overall description plus a list of Title/Heading/Description sections, sheet name `Biograpahy` (spelled that way in the real spreadsheet). The description lives only in row 2's `description` column; each section is its own row in the `Title`/`Heading`/`Description` columns. Deleting the section that happens to share row 2 with the description re-writes the description onto the row that becomes the new row 2, so it's never lost.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -136,6 +137,7 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   packages.js          GET/POST/PUT/DELETE for the Packages tab
   upcoming.js          GET/POST/PUT/DELETE for the Upcoming tab (sheet: UpcomingTournaments)
   coach-club.js        GET/POST/PUT/DELETE for the Coach & Club tab (sheet: Coach&Club)
+  biography.js         GET/POST/PUT/DELETE for the Biography tab (sheet: Biograpahy)
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
   [tab].js              Dynamic route for Rankings, Career Achievements, Career Highlights, Competency Blueprint, Training History, Contact — see below
 netlify/functions/    Thin adapters that run api/*.js (or api/_lib/simpleTabs.js entries) as Netlify Functions
@@ -144,7 +146,7 @@ server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage, CompetencyBlueprintPage, TrainingHistoryPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage, CompetencyBlueprintPage, TrainingHistoryPage, BiographyPage
 ```
 
 ### Vercel's 12-function limit (Hobby plan)

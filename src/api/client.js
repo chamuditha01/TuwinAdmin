@@ -126,6 +126,17 @@ export const updateTrainingHistory = (row, entry) =>
 export const deleteTrainingHistory = (row) =>
   request(`/api/training-history?row=${row}`, { method: 'DELETE' });
 
+// Biography
+export const getBiography = () => request('/api/biography');
+export const updateBiographyDescription = (description) =>
+  request('/api/biography', { method: 'PUT', body: JSON.stringify({ description }) });
+export const addBiographySection = (entry) =>
+  request('/api/biography', { method: 'POST', body: JSON.stringify(entry) });
+export const updateBiographySection = (row, entry) =>
+  request(`/api/biography?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
+export const deleteBiographySection = (row) =>
+  request(`/api/biography?row=${row}`, { method: 'DELETE' });
+
 // Cloudinary delete goes through the backend (needs the API secret) — used
 // when an image is removed from a set (e.g. Packages' Image_Set) before the
 // row is saved, so it doesn't just get orphaned on Cloudinary.

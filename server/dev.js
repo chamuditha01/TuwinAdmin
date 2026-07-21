@@ -14,6 +14,7 @@ const packages = require('../api/packages');
 const cloudinaryDelete = require('../api/cloudinary-delete');
 const upcoming = require('../api/upcoming');
 const coachClub = require('../api/coach-club');
+const biography = require('../api/biography');
 const { TABS } = require('../api/_lib/simpleTabs');
 
 const app = express();
@@ -28,6 +29,7 @@ app.all('/api/packages', (req, res) => packages(req, res));
 app.all('/api/cloudinary-delete', (req, res) => cloudinaryDelete(req, res));
 app.all('/api/upcoming', (req, res) => upcoming(req, res));
 app.all('/api/coach-club', (req, res) => coachClub(req, res));
+app.all('/api/biography', (req, res) => biography(req, res));
 
 // Rankings, Career Achievements, Career Highlights, Competency Blueprint,
 // Training History, Contact — mirrors api/[tab].js's dynamic dispatch.
