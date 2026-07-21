@@ -11,6 +11,7 @@ import CoachClubPage from './pages/CoachClubPage';
 import ContactPage from './pages/ContactPage';
 import CareerAchievementsPage from './pages/CareerAchievementsPage';
 import CareerHighlightsPage from './pages/CareerHighlightsPage';
+import CompetencyBlueprintPage from './pages/CompetencyBlueprintPage';
 import './styles/admin.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/career-achievements" element={<CareerAchievementsPage />} />
           <Route path="/career-highlights" element={<CareerHighlightsPage />} />
+          <Route path="/competency-blueprint" element={<CompetencyBlueprintPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -40,6 +40,9 @@ export default function Layout() {
           <NavLink to="/career-highlights" className={({ isActive }) => (isActive ? 'active' : '')}>
             Career Highlights
           </NavLink>
+          <NavLink to="/competency-blueprint" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Competency Blueprint
+          </NavLink>
         </nav>
       </aside>
       <main className="content">

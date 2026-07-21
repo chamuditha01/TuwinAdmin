@@ -108,6 +108,15 @@ export const updateCareerHighlight = (row, entry) =>
 export const deleteCareerHighlight = (row) =>
   request(`/api/career-highlights?row=${row}`, { method: 'DELETE' });
 
+// Competency Blueprint
+export const getCompetencyBlueprints = () => request('/api/competency-blueprint');
+export const addCompetencyBlueprint = (entry) =>
+  request('/api/competency-blueprint', { method: 'POST', body: JSON.stringify(entry) });
+export const updateCompetencyBlueprint = (row, entry) =>
+  request(`/api/competency-blueprint?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
+export const deleteCompetencyBlueprint = (row) =>
+  request(`/api/competency-blueprint?row=${row}`, { method: 'DELETE' });
+
 // Cloudinary delete goes through the backend (needs the API secret) — used
 // when an image is removed from a set (e.g. Packages' Image_Set) before the
 // row is saved, so it doesn't just get orphaned on Cloudinary.
