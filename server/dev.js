@@ -17,6 +17,7 @@ const upcoming = require('../api/upcoming');
 const coachClub = require('../api/coach-club');
 const contact = require('../api/contact');
 const careerAchievements = require('../api/career-achievements');
+const careerHighlights = require('../api/career-highlights');
 
 const app = express();
 app.use(express.json());
@@ -33,6 +34,7 @@ app.all('/api/upcoming', (req, res) => upcoming(req, res));
 app.all('/api/coach-club', (req, res) => coachClub(req, res));
 app.all('/api/contact', (req, res) => contact(req, res));
 app.all('/api/career-achievements', (req, res) => careerAchievements(req, res));
+app.all('/api/career-highlights', (req, res) => careerHighlights(req, res));
 
 const port = process.env.API_PORT || 5001;
 app.listen(port, () => {

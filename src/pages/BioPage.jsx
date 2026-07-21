@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Modal from '../components/Modal';
 import { getBios, addBio, updateBio, deleteBio } from '../api/client';
 
-const EMPTY_FORM = { Name: '', Birthday: '', 'World Rank': '' };
+const EMPTY_FORM = { Name: '', Birthday: '', 'World Rank': '', Description: '' };
 
 // Mirrors the server-side calculation in api/bio.js — used here only for an
 // immediate preview while editing; the saved value always comes from the
@@ -58,6 +58,10 @@ function BioForm({ initial, onCancel, onSave }) {
       <div className="form-field">
         <label>Age (calculated automatically)</label>
         <input value={calculateAge(form.Birthday)} disabled />
+      </div>
+      <div className="form-field">
+        <label>Description</label>
+        <textarea rows={5} value={form.Description} onChange={setField('Description')} />
       </div>
       <div className="form-actions">
         <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={saving}>
@@ -148,6 +152,7 @@ export default function BioPage() {
                 <th>Birthday</th>
                 <th>World Rank</th>
                 <th>Age</th>
+                <th>Description</th>
                 <th></th>
               </tr>
             </thead>
@@ -158,6 +163,9 @@ export default function BioPage() {
                   <td data-label="Birthday">{b.Birthday}</td>
                   <td data-label="World Rank">{b['World Rank']}</td>
                   <td data-label="Age">{b.Age}</td>
+                  <td className="cell-truncate" data-label="Description" title={b.Description}>
+                    {b.Description}
+                  </td>
                   <td className="row-actions">
                     <button className="btn btn-secondary btn-small" onClick={() => setModalMode(b)}>
                       Edit

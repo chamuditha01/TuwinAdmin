@@ -4,7 +4,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 
 - **Articles** tab — full CRUD (add / edit / delete rows: category, source, date, title, description, link_text, url).
 - **Gallery** tab — upload one or many images at once (stored on Cloudinary, URLs saved to the sheet) into any category, move them between categories, reorder categories with ‹ › buttons (controls the column order in the sheet), and delete them. Categories are just named columns on the Gallery sheet — `local`/`international` are the two that already existed, and "+ Add Category" adds a new column so more can be created from the UI without touching the spreadsheet directly. "Delete Category" removes the column and every image in it (sheet row + Cloudinary asset) — there's no undo, so it confirms first.
-- **Bio** tab — full CRUD for Name / Birthday / World Rank. Age is never entered manually — it's calculated from Birthday on every read and write, so it can't go stale.
+- **Bio** tab — full CRUD for Name / Birthday / World Rank / Description. Age is never entered manually — it's calculated from Birthday on every read and write, so it can't go stale.
 - **Sponsors** tab — full CRUD for Name / logo (Cloudinary upload, like Gallery) / Status (`current`/`former` dropdown) / Description. Replacing or deleting a logo cleans up the old Cloudinary asset.
 - **Packages** tab — full CRUD for Tier Name / Title / Price / Benefits (one per line) / Image_Set (multiple Cloudinary-uploaded images per package, stored as a comma-separated list of URLs). Removing an image before saving, or deleting the whole package, cleans up the Cloudinary assets.
 - **Rankings** tab — full CRUD for date / ranking (a simple time series).
@@ -12,6 +12,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Coach & Club** tab — full CRUD for Name / Image (single Cloudinary upload, like Sponsors) / Profile / Biography, sheet name `Coach&Club`. Its `&` requires quoting in every Sheets API range (`'Coach&Club'!A1:D`) — worth remembering if this tab is ever touched directly. Profile is a list of points, each stored in its own sheet row directly beneath the coach's row (not one cell) — add/remove points in the UI and the backend inserts/deletes the physical rows to match, including a "Delete All Points" shortcut.
 - **Contact** tab — full CRUD for Locations / email / phone numbers, sheet name `Contact`. Phone numbers support multiple entries via "+ Add Phone Number", stored as one comma-separated cell.
 - **Career Achievements** tab — full CRUD for Title / heading / description / footer, sheet name `CareerAchievements`.
+- **Career Highlights** tab — full CRUD for year / title / description / tag / icon, sheet name `CareerHighlights`. Icon is a plain text/emoji field, not an image upload.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -134,6 +135,7 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   coach-club.js        GET/POST/PUT/DELETE for the Coach & Club tab (sheet: Coach&Club)
   contact.js           GET/POST/PUT/DELETE for the Contact tab
   career-achievements.js  GET/POST/PUT/DELETE for the Career Achievements tab
+  career-highlights.js  GET/POST/PUT/DELETE for the Career Highlights tab
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
 netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect
@@ -141,5 +143,5 @@ server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage
 ```

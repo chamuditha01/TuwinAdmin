@@ -1,42 +1,23 @@
 const { fetchWorkbook, getSheetRows, SHEET_ID } = require('./_lib/sheet');
 const { getSheetsClient, getTabId } = require('./_lib/sheetsClient');
 
-const SHEET_NAME = 'Bio';
-const COLUMNS = ['Name', 'Birthday', 'World Rank', 'Age', 'Description'];
-
-// Age is never taken from user input or trusted from the sheet — it's
-// derived from Birthday every time, so it can't go stale as time passes.
-function calculateAge(birthday) {
-  const dob = new Date(`${birthday}T00:00:00Z`);
-  if (Number.isNaN(dob.getTime())) return '';
-
-  const today = new Date();
-  let age = today.getUTCFullYear() - dob.getUTCFullYear();
-  const hasHadBirthdayThisYear =
-    today.getUTCMonth() > dob.getUTCMonth() ||
-    (today.getUTCMonth() === dob.getUTCMonth() && today.getUTCDate() >= dob.getUTCDate());
-  if (!hasHadBirthdayThisYear) age -= 1;
-  return age >= 0 ? age : '';
-}
+const SHEET_NAME = 'CareerHighlights';
+const COLUMNS = ['year', 'title', 'description', 'tag', 'icon'];
 
 function rowToValues(body) {
-  const age = calculateAge(body.Birthday);
-  return [
-    body.Name ?? '',
-    body.Birthday ?? '',
-    body['World Rank'] ?? '',
-    String(age),
-    body.Description ?? '',
-  ];
+  return COLUMNS.map((key) => (body[key] ?? '').toString());
 }
 
 module.exports = async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const workbook = await fetchWorkbook();
+      // Existing rows have "year" entered as a plain number, so xlsx hands
+      // it back as a JS number — coerce to text here rather than pushing
+      // that string-vs-number distinction onto the frontend.
       const rows = getSheetRows(workbook, SHEET_NAME).map((row) => ({
         ...row,
-        Age: calculateAge(row.Birthday),
+        year: String(row.year ?? ''),
       }));
       return res.status(200).json(rows);
     }
@@ -46,6 +27,8 @@ module.exports = async function handler(req, res) {
       await sheets.spreadsheets.values.append({
         spreadsheetId: SHEET_ID,
         range: `${SHEET_NAME}!A:E`,
+        // RAW keeps "year" as literal text instead of letting Sheets
+        // auto-parse it as a number again.
         valueInputOption: 'RAW',
         requestBody: { values: [rowToValues(req.body)] },
       });
@@ -95,7 +78,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST, PUT, DELETE');
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error('bio handler error:', err);
+    console.error('career-highlights handler error:', err);
     return res.status(500).json({ error: err.message || 'Internal error' });
   }
 };
