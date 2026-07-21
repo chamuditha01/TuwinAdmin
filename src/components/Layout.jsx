@@ -43,6 +43,9 @@ export default function Layout() {
           <NavLink to="/competency-blueprint" className={({ isActive }) => (isActive ? 'active' : '')}>
             Competency Blueprint
           </NavLink>
+          <NavLink to="/training-history" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Training History
+          </NavLink>
         </nav>
       </aside>
       <main className="content">

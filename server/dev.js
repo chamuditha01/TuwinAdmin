@@ -19,6 +19,7 @@ const contact = require('../api/contact');
 const careerAchievements = require('../api/career-achievements');
 const careerHighlights = require('../api/career-highlights');
 const competencyBlueprint = require('../api/competency-blueprint');
+const trainingHistory = require('../api/training-history');
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,7 @@ app.all('/api/contact', (req, res) => contact(req, res));
 app.all('/api/career-achievements', (req, res) => careerAchievements(req, res));
 app.all('/api/career-highlights', (req, res) => careerHighlights(req, res));
 app.all('/api/competency-blueprint', (req, res) => competencyBlueprint(req, res));
+app.all('/api/training-history', (req, res) => trainingHistory(req, res));
 
 const port = process.env.API_PORT || 5001;
 app.listen(port, () => {

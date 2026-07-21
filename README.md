@@ -14,6 +14,7 @@ Admin panel for managing the [Articles & Gallery Google Sheet](https://docs.goog
 - **Career Achievements** tab — full CRUD for Title / heading / description / footer, sheet name `CareerAchievements`.
 - **Career Highlights** tab — full CRUD for year / title / description / tag / icon, sheet name `CareerHighlights`. Icon is a plain text/emoji field, not an image upload.
 - **Competency Blueprint** tab — full CRUD for a single-column list of blueprint names, sheet name `CompetencyBlueprint`.
+- **Training History** tab — full CRUD for title / heading / description, sheet name `TrainingHistory`.
 
 Reads go through the sheet's public XLSX export (no credentials needed — the
 sheet must stay shared as "Anyone with the link can view"). Writes go through
@@ -138,6 +139,7 @@ api/                  Handler logic, shared by Vercel + Netlify + local dev
   career-achievements.js  GET/POST/PUT/DELETE for the Career Achievements tab
   career-highlights.js  GET/POST/PUT/DELETE for the Career Highlights tab
   competency-blueprint.js  GET/POST/PUT/DELETE for the Competency Blueprint tab
+  training-history.js   GET/POST/PUT/DELETE for the Training History tab
   cloudinary-delete.js   POST to delete a single Cloudinary asset by URL
 netlify/functions/    Thin adapters that run api/*.js as Netlify Functions
 netlify.toml          Netlify build config + /api/* → functions redirect
@@ -145,5 +147,5 @@ server/dev.js         Local-only Express server that mounts the api/ handlers
 src/
   api/client.js        Frontend fetch wrappers + Cloudinary upload
   components/          Layout, Modal
-  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage, CompetencyBlueprintPage
+  pages/                ArticlesPage, GalleryPage, BioPage, SponsorsPage, PackagesPage, RankingsPage, UpcomingPage, CoachClubPage, ContactPage, CareerAchievementsPage, CareerHighlightsPage, CompetencyBlueprintPage, TrainingHistoryPage
 ```
