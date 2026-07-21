@@ -50,6 +50,15 @@ export default function Layout() {
             Biography
           </NavLink>
         </nav>
+        <div className="sidebar-footer">
+          <a
+            href="https://docs.google.com/spreadsheets/d/1sY7_eNfVYkKDoS3SXm1ft2luVwKsN59orsIjehfV9Xs/edit"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open Google Sheet ↗
+          </a>
+        </div>
       </aside>
       <main className="content">
         <Outlet />
