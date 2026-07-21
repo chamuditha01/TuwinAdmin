@@ -264,6 +264,17 @@
   flex: 1;
 }
 
+.list-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.list-input-row input {
+  flex: 1;
+}
+
 /* Below this width, tables drop the grid layout and become a stack of
    label/value cards per row instead of scrolling sideways — small-screen
    admin users are far more likely to be one-thumb scrolling than panning

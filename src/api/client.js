@@ -82,6 +82,23 @@ export const updateCoachClub = (row, entry) =>
   request(`/api/coach-club?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
 export const deleteCoachClub = (row) => request(`/api/coach-club?row=${row}`, { method: 'DELETE' });
 
+// Contact
+export const getContacts = () => request('/api/contact');
+export const addContact = (entry) =>
+  request('/api/contact', { method: 'POST', body: JSON.stringify(entry) });
+export const updateContact = (row, entry) =>
+  request(`/api/contact?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
+export const deleteContact = (row) => request(`/api/contact?row=${row}`, { method: 'DELETE' });
+
+// Career Achievements
+export const getCareerAchievements = () => request('/api/career-achievements');
+export const addCareerAchievement = (entry) =>
+  request('/api/career-achievements', { method: 'POST', body: JSON.stringify(entry) });
+export const updateCareerAchievement = (row, entry) =>
+  request(`/api/career-achievements?row=${row}`, { method: 'PUT', body: JSON.stringify(entry) });
+export const deleteCareerAchievement = (row) =>
+  request(`/api/career-achievements?row=${row}`, { method: 'DELETE' });
+
 // Cloudinary delete goes through the backend (needs the API secret) — used
 // when an image is removed from a set (e.g. Packages' Image_Set) before the
 // row is saved, so it doesn't just get orphaned on Cloudinary.

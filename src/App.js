@@ -8,6 +8,8 @@ import PackagesPage from './pages/PackagesPage';
 import RankingsPage from './pages/RankingsPage';
 import UpcomingPage from './pages/UpcomingPage';
 import CoachClubPage from './pages/CoachClubPage';
+import ContactPage from './pages/ContactPage';
+import CareerAchievementsPage from './pages/CareerAchievementsPage';
 import './styles/admin.css';
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
           <Route path="/rankings" element={<RankingsPage />} />
           <Route path="/upcoming" element={<UpcomingPage />} />
           <Route path="/coach-club" element={<CoachClubPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/career-achievements" element={<CareerAchievementsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
